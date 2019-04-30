@@ -15,12 +15,6 @@ env:
 
 matrix:
   include:
-  - env: REPO=claudioandre/john   NAME=fedora.29           DOCKERFILE=Dockerfile.F29
-  - env: REPO=claudioandre/john   NAME=fedora.29.flatpak   DOCKERFILE=Dockerfile.flatpak.package
-  - env: REPO=claudioandre/john   NAME=ubuntu.opencl       DOCKERFILE=Dockerfile.OpenCL
-  - env: REPO=claudioandre/john   NAME=ubuntu.devel        DOCKERFILE=Dockerfile.UbuntuDevel
-  - env: REPO=claudioandre/john   NAME=ubuntu.rolling      DOCKERFILE=Dockerfile.UbuntuRolling
-  - env: REPO=claudioandre/john   NAME=centos.6            DOCKERFILE=Dockerfile.CentOS6
   - env: REPO=claudioandre/john   NAME=v1.9.0J1            DOCKERFILE=Dockerfile   BIN_VERSION=yes
 
 script:
@@ -44,6 +38,17 @@ script:
   - 'if [[ "$log_message" == *"[run test]"* && "$log_message" == *"[$NAME]"* ]]; then
        git clone  https://github.com/magnumripper/JohnTheRipper.git john && cd john/src;
        docker run -v $(pwd):/cwd $REPO:$NAME bash -e -c "cd /cwd && ./configure && make -sj2";
+     fi
+    '
+
+  # Test the build
+  - 'if [[ "$log_message" == *"[test image]"* && "$log_message" == *"[$NAME]"* ]]; then
+       docker run claudioandre/john:v1.9.0J1 sse2    --test=10 --format=SHA512crypt;
+       docker run claudioandre/john:v1.9.0J1 ssse3   --test=10 --format=SHA512crypt;
+       docker run claudioandre/john:v1.9.0J1 sse4.1  --test=10 --format=SHA512crypt;
+       docker run claudioandre/john:v1.9.0J1 avx     --test=10 --format=SHA512crypt;
+       docker run claudioandre/john:v1.9.0J1 sse4.2-no-omp  --test=10 --format=SHA512crypt;
+       docker run claudioandre/john:v1.9.0J1 avx-no-omp     --test=10 --format=SHA512crypt;
      fi
     '
 
